@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Login | Param Sundari</title>
+  <style>
+    body {
+      background-color: #0b0b0b;
+      color: #fff;
+      font-family: 'Poppins', sans-serif;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      height: 100vh;
+    }
+    form {
+      background: rgba(255,255,255,0.05);
+      padding: 30px; border-radius: 15px;
+      width: 320px; box-shadow: 0 0 10px rgba(183,110,121,0.5);
+    }
+    input, button {
+      width: 100%; padding: 10px; margin-bottom: 10px;
+      border: none; border-radius: 6px;
+    }
+    input { background: #1c1c1c; color: #fff; }
+    button {
+      background: #b76e79; color: #fff; cursor: pointer;
+      transition: 0.3s;
+    }
+    button:hover { background: #d2959e; }
+  </style>
+</head>
+<body>
+  <h2 style="color:#b76e79;">Admin Login</h2>
+  <form id="loginForm">
+    <input type="email" id="email" placeholder="Email" required>
+    <input type="password" id="password" placeholder="Password" required>
+    <button type="submit">Login</button>
+  </form>
+  <p id="msg"></p>
+
+  <script>
+    const adminEmail = "sweeta@paramsundari.com";
+    const adminPass = "Sweeta@8839";
+
+    document.getElementById("loginForm").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const email = document.getElementById("email").value.trim();
+      const pass = document.getElementById("password").value.trim();
+      const msg = document.getElementById("msg");
+
+      if (email === adminEmail && pass === adminPass) {
+        localStorage.setItem("adminLoggedIn", "true");
+        msg.textContent = "✅ Login successful!";
+        setTimeout(() => window.location.href = "admin-dashboard.html", 800);
+      } else {
+        msg.textContent = "❌ Incorrect email or password!";
+      }
+    });
+  </script>
+</body>
+</html>

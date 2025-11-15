@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Dashboard | Param Sundari</title>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif;}
+    body{background:#0b0b0b;color:#fff;min-height:100vh;}
+    header{
+      background:#111;padding:15px 25px;
+      display:flex;justify-content:space-between;align-items:center;
+      box-shadow:0 2px 10px rgba(183,110,121,0.3);
+      flex-wrap:wrap;
+    }
+    h2{color:#b76e79;margin:0;}
+    .nav-buttons{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px;}
+    .nav-buttons button{
+      background:#b76e79;border:none;color:#fff;padding:8px 15px;
+      border-radius:6px;cursor:pointer;font-weight:500;transition:.3s;
+    }
+    .nav-buttons button.active{background:#d2959e;}
+    .nav-buttons button:hover{background:#d2959e;}
+    .container{padding:25px;max-width:1100px;margin:auto;}
+    .tab-content{display:none;}
+    .tab-content.active{display:block;animation:fade .4s;}
+    @keyframes fade{from{opacity:0;}to{opacity:1;}}
+    .section{
+      background:rgba(255,255,255,0.05);
+      padding:20px;margin:25px 0;border-radius:10px;
+    }
+    input,textarea,select,button{
+      border:none;border-radius:6px;padding:8px;margin-top:5px;
+      font-family:inherit;
+    }
+    input,textarea,select{width:100%;background:#1a1a1a;color:#fff;}
+    button.submit-btn{
+      background:#b76e79;color:#fff;cursor:pointer;font-weight:500;
+      transition:.3s;margin-top:10px;
+    }
+    button.submit-btn:hover{background:#d2959e;}
+    .review,.product-item,.order-item{
+      border-bottom:1px solid rgba(255,255,255,0.1);padding:10px 0;
+    }
+    .review:last-child,.product-item:last-child,.order-item:last-child{border-bottom:none;}
+    .review h4,.product-item h4,.order-item h4{color:#b76e79;margin-bottom:5px;}
+    .rating{color:gold;}
+    img.thumb{width:80px;height:80px;object-fit:cover;border-radius:8px;margin-right:10px;}
+    .order-item p{margin:3px 0;color:#ccc;font-size:0.9rem;}
+    .delete-btn{
+      background:#ff5555;color:#fff;border:none;padding:5px 10px;
+      border-radius:5px;cursor:pointer;transition:0.3s;
+    }
+    .delete-btn:hover{background:#ff7777;}
+  </style>
+</head>
+<body>
+  <header>
+    <h2>Param Sundari Admin Dashboard</h2>
+    <div class="nav-buttons">
+      <button class="tab-btn active" data-tab="products-tab">Products</button>
+      <button class="tab-btn" data-tab="orders-tab">Orders</button>
+      <button class="tab-btn" data-tab="reviews-tab">Reviews</button>
+      <a href="index.html" style="text-decoration:none;">
+        <button>🏠 View Website</button>
+      </a>
+    </div>
+  </header>
+
+  <div class="container">
+
+    <!-- ===== PRODUCTS TAB ===== -->
+    <div id="products-tab" class="tab-content active">
+      <div class="section">
+        <h2>🛍️ Add Product</h2>
+        <form id="productForm" enctype="multipart/form-data">
+          <input type="text" id="pname" placeholder="Product Name" required><br>
+          <input type="number" id="pprice" placeholder="Price ₹" required><br>
+          <textarea id="pdesc" placeholder="Product Description"></textarea><br>
+          <label style="display:flex;align-items:center;gap:5px;">
+            <input type="checkbox" id="ptop"> Top Selling
+          </label><br>
+          <input type="file" id="pimage" accept="image/*" required><br>
+          <button type="submit" class="submit-btn">Upload Product</button>
+        </form>
+
+        <h2 style="margin-top:25px;">📋 All Products</h2>
+        <div id="productList"><p>Loading products...</p></div>
+      </div>
+    </div>
+
+    <!-- ===== ORDERS TAB ===== -->
+    <div id="orders-tab" class="tab-content">
+      <div class="section">
+        <h2>📦 Customer Orders</h2>
+        <div id="ordersList"><p>Loading orders...</p></div>
+      </div>
+    </div>
+
+    <!-- ===== REVIEWS TAB ===== -->
+    <div id="reviews-tab" class="tab-content">
+      <div class="section">
+        <h2>💬 Customer Reviews</h2>
+        <form id="reviewForm">
+          <input type="text" id="rname" placeholder="Customer Name" required><br>
+          <select id="rrating" required>
+            <option value="">Select Rating</option>
+            <option value="5">⭐⭐⭐⭐⭐</option>
+            <option value="4">⭐⭐⭐⭐</option>
+            <option value="3">⭐⭐⭐</option>
+            <option value="2">⭐⭐</option>
+            <option value="1">⭐</option>
+          </select><br>
+          <textarea id="rmessage" rows="3" placeholder="Write customer review..." required></textarea><br>
+          <button type="submit" class="submit-btn">Add Review</button>
+        </form>
+        <div class="review-list" id="reviewList" style="margin-top:15px;"><p>Loading reviews...</p></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const backendURL="http://localhost:5000";
+
+    // ===== TAB SWITCHING =====
+    const tabs=document.querySelectorAll(".tab-btn");
+    const contents=document.querySelectorAll(".tab-content");
+    tabs.forEach(btn=>{
+      btn.addEventListener("click",()=>{
+        tabs.forEach(b=>b.classList.remove("active"));
+        contents.forEach(c=>c.classList.remove("active"));
+        btn.classList.add("active");
+        document.getElementById(btn.dataset.tab).classList.add("active");
+      });
+    });
+
+    // ===== PRODUCTS =====
+    async function loadProducts(){
+      try{
+        const res=await fetch(`${backendURL}/api/products`);
+        const data=await res.json();
+        const list=document.getElementById("productList");
+        if(!data.length){list.innerHTML="<p>No products yet.</p>";return;}
+        list.innerHTML=data.map(p=>`
+          <div class="product-item" style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <img src="${backendURL}${p.image}" class="thumb" alt="${p.name}">
+              <div>
+                <h4>${p.name}${p.topSelling?' ⭐':''}</h4>
+                <p>₹${p.price}</p>
+              </div>
+            </div>
+            <button class="delete-btn" onclick="deleteProduct(${p.id})">Delete</button>
+          </div>`).join("");
+      }catch(err){document.getElementById("productList").innerHTML="<p style='color:red;'>Failed to load products.</p>";}
+    }
+
+    async function deleteProduct(id){
+      if(!confirm("Delete this product?"))return;
+      await fetch(`${backendURL}/api/products/${id}`,{method:"DELETE"});
+      loadProducts();
+    }
+
+    document.getElementById("productForm").addEventListener("submit",async(e)=>{
+      e.preventDefault();
+      const formData=new FormData();
+      formData.append("name",document.getElementById("pname").value);
+      formData.append("price",document.getElementById("pprice").value);
+      formData.append("description",document.getElementById("pdesc").value);
+      formData.append("topSelling",document.getElementById("ptop").checked);
+      formData.append("image",document.getElementById("pimage").files[0]);
+      const res=await fetch(`${backendURL}/api/products`,{method:"POST",body:formData});
+      if(res.ok){alert("✅ Product added!");e.target.reset();loadProducts();}
+      else alert("❌ Failed to add product.");
+    });
+
+    // ===== ORDERS =====
+    async function loadOrders(){
+      try{
+        const res=await fetch(`${backendURL}/api/orders`);
+        const data=await res.json();
+        const list=document.getElementById("ordersList");
+        if(!data.length){list.innerHTML="<p>No orders yet.</p>";return;}
+        list.innerHTML=data.map(o=>`
+          <div class="order-item">
+            <h4>${o.name} — ₹${o.total}</h4>
+            <p>📞 ${o.phone} | 🏙️ ${o.city} (${o.pincode})</p>
+            <p>🏠 ${o.address}</p>
+            <p>🕒 ${o.date}</p>
+            <ul>${o.cart.map(i=>`<li>${i.name} (${i.size}) – ₹${i.price}</li>`).join("")}</ul>
+            <button class="delete-btn" onclick="deleteOrder(${o.id})">Delete</button>
+          </div>`).join("");
+      }catch(err){document.getElementById("ordersList").innerHTML="<p style='color:red;'>Failed to load orders.</p>";}
+    }
+
+    async function deleteOrder(id){
+      if(!confirm("Delete this order?"))return;
+      await fetch(`${backendURL}/api/orders/${id}`,{method:"DELETE"});
+      loadOrders();
+    }
+
+    // ===== REVIEWS =====
+    async function loadReviews(){
+      try{
+        const res=await fetch(`${backendURL}/api/reviews`);
+        const data=await res.json();
+        const list=document.getElementById("reviewList");
+        if(!data.length){list.innerHTML="<p>No reviews yet.</p>";return;}
+        list.innerHTML=data.map(r=>`
+          <div class="review">
+            <h4>${r.name} <span class="rating">${"⭐".repeat(r.rating)}</span></h4>
+            <p>${r.message}</p>
+          </div>`).join("");
+      }catch(err){document.getElementById("reviewList").innerHTML="<p style='color:red;'>Failed to load reviews.</p>";}
+    }
+
+    document.getElementById("reviewForm").addEventListener("submit",async(e)=>{
+      e.preventDefault();
+      const name=document.getElementById("rname").value.trim();
+      const rating=parseInt(document.getElementById("rrating").value);
+      const message=document.getElementById("rmessage").value.trim();
+      if(!name||!rating||!message)return alert("Fill all fields!");
+      const res=await fetch(`${backendURL}/api/reviews`,{
+        method:"POST",headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({name,rating,message})
+      });
+      if(res.ok){alert("✅ Review added!");e.target.reset();loadReviews();}
+      else alert("Failed to save review.");
+    });
+
+    loadProducts();loadOrders();loadReviews();
+  </script>
+</body>
+</html>

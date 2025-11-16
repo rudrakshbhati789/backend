@@ -1,22 +1,21 @@
 {
   "name": "param-sundari-backend",
   "version": "1.0.0",
-  "description": "Backend for Param Sundari custom clothing website (JSON database)",
+  "description": "Backend for Param Sundari Clothing Website with JSON DB",
   "main": "server.js",
   "type": "module",
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js"
   },
+  "author": "",
+  "license": "MIT",
   "dependencies": {
     "cors": "^2.8.5",
-    "express": "^4.18.3",
-    "multer": "^1.4.5"
+    "express": "^4.18.2",
+    "multer": "^1.4.5-lts.1"
   },
   "devDependencies": {
-    "nodemon": "^2.0.22"
-  },
-  "keywords": [],
-  "author": "Sweeta",
-  "license": "ISC"
+    "nodemon": "^3.1.0"
+  }
 }
